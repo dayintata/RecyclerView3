@@ -6,7 +6,6 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -24,8 +23,11 @@ public class MainActivity extends AppCompatActivity implements HotelAdapter.IHot
 
 
     public static final String HOTEL = "hotel";
+    private static final int REQUEST_CODE_ADD = 88;
+    private static final int REQUEST_CODE_EDIT = 99;
     ArrayList<Hotel> mList = new ArrayList<>();
     HotelAdapter mAdapter;
+    int itemPost;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,9 +40,10 @@ public class MainActivity extends AppCompatActivity implements HotelAdapter.IHot
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                goAdd();
             }
+
+
         });
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
@@ -51,6 +54,10 @@ public class MainActivity extends AppCompatActivity implements HotelAdapter.IHot
 
         fillData();
 
+    }
+
+    private void goAdd() {
+        startActivityForResult(new Intent(this, InputActivity.class), REQUEST_CODE_ADD);
     }
 
     private void fillData() {
@@ -105,5 +112,43 @@ public class MainActivity extends AppCompatActivity implements HotelAdapter.IHot
         Intent intent = new Intent(this, DetailActivity.class);
         intent.putExtra(HOTEL, mList.get(pos));
         startActivity(intent);
+    }
+
+    @Override
+    public void doEdit(int pos) {
+        itemPost = pos;
+        Intent intent = new Intent(this, InputActivity.class);
+        intent.putExtra(HOTEL, mList.get(pos));
+        startActivityForResult(intent, REQUEST_CODE_EDIT);
+    }
+
+    @Override
+    public void doDelete(int pos) {
+
+    }
+
+    @Override
+    public void doFav(int pos) {
+
+    }
+
+    @Override
+    public void doShare(int pos) {
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_ADD && resultCode == RESULT_OK) {
+            Hotel hotel = (Hotel) data.getSerializableExtra(HOTEL);
+            mList.add(hotel);
+            mAdapter.notifyDataSetChanged();
+        } else if (requestCode == REQUEST_CODE_EDIT && resultCode == RESULT_OK) {
+            Hotel hotel = (Hotel) data.getSerializableExtra(HOTEL);
+            mList.remove(itemPost);
+            mList.add(itemPost, hotel);
+            mAdapter.notifyDataSetChanged();
+        }
     }
 }
